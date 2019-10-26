@@ -139,13 +139,21 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ mutation });
 
-      const data = response.body.data.getMedia;
+      const data = response.body.data.addUser;
 
       expect(response.ok).to.be.true;
       expect(data.length).to.equal(1);
       expect(data[0].username).to.equal(testUserA.username);
       expect(data[0].email).to.equal(testUserB.username);
       expect(data[0].hasOwnProperty("password")).to.be.false;
+    });
+
+    it("password is hashed", () => {
+      const passwordCheck = knex("users")
+        .select("password")
+        .where({ name: testUserA.username });
+
+      expect(passwordCheck).to.equal(testCases.expectedTestUserAHash);
     });
 
     it("can retrive specific user information on the basis of username or id", async () => {
@@ -161,7 +169,7 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ queryA });
 
-      const dataA = responseA.body.data.getMedia;
+      const dataA = responseA.body.data.getUser;
 
       expect(dataA[0].username).to.equal(testUserA.username);
 
@@ -177,7 +185,7 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ queryB });
 
-      const dataB = responseB.body.data.getMedia;
+      const dataB = responseB.body.data.getUser;
 
       expect(dataB[0]).to.deep.equal(dataA[0]);
     });
@@ -194,7 +202,7 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ queryA });
 
-      const dataA = responseA.body.data.getMedia;
+      const dataA = responseA.body.data.getUser;
       expect(dataA[0].email).to.equal(undefined);
       expect(responseA.ok).to.be.false;
     });
@@ -211,7 +219,7 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ queryA });
 
-      const dataA = responseA.body.data.getMedia;
+      const dataA = responseA.body.data.getUser;
       expect(dataA[0].password).to.equal(undefined);
       expect(responseA.ok).to.be.false;
     });
@@ -222,15 +230,180 @@ describe("API Interactions", () => {
       .del();
   });
 
-  describe("Media Records", () => {
-    it("can create a media record with a user password", () => {});
+  describe("Media Records", async () => {
+    const testUserB = testCases.testUserB;
+    //Add test user B
+    const mutation = `
+            mutation {
+                addUser(
+                input: {
+                    name: ${testUserB.username}
+                    email: ${testUserB.email}
+                    password: ${testUserB.password}
+                }){
+                    id
+                    username
+                    email
+                }
+            }`;
 
-    it("can view a list of media records", () => {});
+    const response = await chai
+      .request(server)
+      .post("/graphql")
+      .send({ mutation });
 
-    it("can view a given media record by id", () => {});
+    const testUserBID = response.body.data.addUser[0].id;
 
-    it("can return information about media, streaming service and country", () => {});
+    const seed = testCases.testMediaRecord;
+    it("can create a media record with a username & password", async () => {
+      const mutation = `
+            mutation {
+                addMediaRecord(
+                input: {
+                    title: ${seed.title}
+                    streaming_service: ${seed.streaming_service}
+                    country: ${seed.country}
+                    media_url: ${seed.media_url}
+                }
+                authentication: {
+                    username: ${testUserB.username}
+                    password: ${testUserB.password}
+                }){
+                    media_url
+                    user_id
+                }
+            }`;
 
-    it("can find a list of media records for a given media", () => {});
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ mutation });
+
+      const data = response.body.data.addMediaRecord;
+
+      expect(response.ok).to.be.true;
+      expect(data.length).to.equal(1);
+      expect(data[0].id).to.equal(testUserBID);
+      expect(data[0].media_url).to.equal(seed.media_url);
+    });
+
+    it("can view a list of media records", async () => {
+      const mutation = `
+            mutation {
+                addMediaRecord(
+                input: {
+                    title: "Demon Slayer: Kimetsu no Yaiba (2019)"
+                    streaming_service: "Amazon Prime Video"
+                    country: "Japan"
+                    media_url: "https://www.amazon.co.jp/gp/video/detail/B07QBC423H/"
+                }
+                authentication: {
+                    username: ${testUserB.username}
+                    password: ${testUserB.password}
+                }){
+                    media_url
+                    user_id
+                }
+            }`;
+
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ mutation });
+
+      const query = `{
+            getMediaRecords {
+              id
+              media_url
+            }
+          }`;
+
+      const response2 = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query });
+
+      const data = response2.body.data.getMediaRecords;
+
+      expect(data.length).to.equal(2);
+    });
+
+    //Get ID For Next Few Tests
+    const queryToGetID = `{
+        getMediaRecords {
+          id
+        }
+      }`;
+
+    const responseToGetID = await chai
+      .request(server)
+      .post("/graphql")
+      .send({ queryToGetID });
+
+    const idFrom1 = responseToGetID.body.data.getMediaRecords[0].id;
+
+    it("can view a given media record by id", async () => {
+      const query = `{
+            getMediaRecord(id:${idFrom1}) {
+              id
+              media_url
+            }
+          }`;
+
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query });
+
+      const data = response.body.data.getMediaRecord;
+
+      expect(data.length).to.equal(1);
+      expect(response2.ok).to.be.true;
+    });
+
+    it("can return further information about media, streaming service, country & user", async () => {
+      const query = `{
+            getMediaRecord(id:${idFrom1}) {
+              Media{
+                  title
+              }
+              StreamingService{
+                  name
+              }
+              Country{
+                  name
+              }
+              User {
+                  username
+              }
+            }
+          }`;
+
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query });
+
+      const data = response.body.data.getMediaRecord;
+
+      expect(data.length).to.equal(1);
+      expect(response2.ok).to.be.true;
+      expect(data[0].Media.title).to.equal(seed.title);
+      expect(data[0].StreamingService.title).to.equal(seed.streaming_service);
+      expect(data[0].Country.name).to.equal(seed.country);
+      expect(data[0].User.username).to.equal(testUserB.username);
+    });
+
+    it("can find a list of media records for a given media by media title", async () => {});
+
+    it("can find a list of media records for a given user by userId", async () => {});
+
+    knex("media_records")
+      .where("media_url", testCases.testMediaRecord.media_url)
+      .del();
+
+    knex("users")
+      .whereIn("name", [testUserA.username, testUserB.username])
+      .del();
   });
 });
