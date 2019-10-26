@@ -295,6 +295,8 @@ describe("API Interactions", () => {
 
       const data = response.body.data.addMediaRecord;
 
+      console.log(response);
+
       expect(response.ok).to.be.true;
       expect(data.length).to.equal(1);
       expect(data[0].id).to.equal(testUserBID);

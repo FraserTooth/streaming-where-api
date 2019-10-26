@@ -7,9 +7,11 @@ const hashIt = string => {
   return bcrypt.hash(string, 6);
 };
 
-const typeDefs = gql`
-  #Media
+const isPasswordValid = (string, hash) => {
+  return bcrypt.compare(string, hash);
+};
 
+const typeDefs = gql`
   type Media {
     id: Int!
     title: String!
@@ -29,10 +31,32 @@ const typeDefs = gql`
     email: String
   }
 
+  type MediaRecord {
+    id: Int!
+    media_id: Int!
+    country_id: Int!
+    streaming_service_id: Int!
+    user_id: Int!
+    media_url: String
+    created_at: String!
+  }
+
   input addUser {
     username: String
     email: String
     password: String
+  }
+
+  input addMediaRecord {
+    title: String!
+    streaming_service: String!
+    country: String!
+    media_url: String!
+  }
+
+  input authenticate {
+    username: String!
+    password: String!
   }
 
   type Query {
@@ -43,6 +67,10 @@ const typeDefs = gql`
 
   type Mutation {
     addUser(input: addUser): [UserWithEmail]
+    addMediaRecord(
+      input: addMediaRecord
+      authentication: authenticate
+    ): [MediaRecord]
   }
 `;
 
@@ -86,6 +114,44 @@ const resolvers = {
               username: input.username
             })
             .select("id", "username", "email");
+        });
+    },
+
+    addMediaRecord: async (_, { input, authentication }) => {
+      const userInfo = await knex("users")
+        .select("password_hash", "id")
+        .where("username", authentication.username);
+      const test = await isPasswordValid(
+        authentication.password,
+        userInfo.password_hash
+      );
+      if (!test) {
+        return;
+      }
+      const user_id = userInfo.id;
+      const media_id = await knex("media")
+        .select("id")
+        .where("title", "like", "%" + input.title + "%");
+      const country_id = await knex("countries")
+        .select("id")
+        .where("name", "like", "%" + input.country + "%");
+      const streaming_service_id = await knex("streaming_services")
+        .select("id")
+        .where("name", "like", "%" + input.streaming_service + "%");
+      return knex("media_records")
+        .insert({
+          media_id,
+          country_id,
+          streaming_service_id,
+          user_id,
+          media_url: input.media_url
+        })
+        .then(() => {
+          return knex("media_records")
+            .where({
+              media_url: input.media_url
+            })
+            .select();
         });
     }
   }
