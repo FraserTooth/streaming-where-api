@@ -1,0 +1,35 @@
+{
+  "name": "streaming-where-api",
+  "version": "1.0.0",
+  "description": "Back End API for Storing and Querying Data from Community Driven Streaming Service Cataloging project",
+  "main": "index.js",
+  "repository": "https://github.com/FraserTooth/streamingWhereAPI.git",
+  "author": "Fraser Tooth <frasertooth@gmail.com>",
+  "license": "Apache-2.0",
+  "private": false,
+  "scripts": {
+    "test": "mocha tests/test.js && yarn lint",
+    "lint": "eslint --fix .",
+    "start": "node index.js",
+    "migrate": "knex migrate:latest --knexfile models/knexfile.js",
+    "rollback": "knex migrate:rollback --knexfile models/knexfile.js ",
+    "precommit": "pretty-quick --staged"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-config-problems": "^3.0.1",
+    "eslint-plugin-prettier": "^3.1.1",
+    "mocha": "^6.2.2",
+    "prettify": "^0.1.7",
+    "pretty-quick": "^2.0.0"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.20.0",
+    "moment": "^2.24.0",
+    "pg": "^7.12.1"
+  }
+}
