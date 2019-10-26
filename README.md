@@ -1,6 +1,7 @@
 This was created during my time as a student at Code Chrysalis
 
 # streaming-where-api
+
 API for community sourced information about media streaming services with information about audio/subtitles/censorship/edits and country by country availability.
 
 ## Environment
@@ -48,3 +49,15 @@ To run the app:
 ```bash
     yarn start
 ```
+
+To run the app in developer mode, where each save refreses the server:
+
+```bash
+    yarn dev
+```
+
+## API
+
+### GraphQL
+
+This is a GraphQL API, allowing for a variation in the columns returned by each query.
