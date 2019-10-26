@@ -160,7 +160,7 @@ describe("API Interactions", () => {
 
     it("can retrive specific user information on the basis of username or id", async () => {
       const queryA = `{
-                getUser(username: ${testUserA.username}) {
+                getUser(username: "${testUserA.username}") {
                   id
                   username
                 }
@@ -194,7 +194,7 @@ describe("API Interactions", () => {
 
     it("cannot retrive email", async () => {
       const queryA = `{
-                getUser(username: ${testUserA.username}) {
+                getUser(username: "${testUserA.username}") {
                   email
                 }
               }`;
@@ -204,14 +204,15 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ query: queryA });
 
-      const dataA = responseA.body.data.getUser;
-      expect(dataA[0].email).to.equal(undefined);
+      expect(responseA.body.errors[0].message).to.equal(
+        'Cannot query field "email" on type "User".'
+      );
       expect(responseA.ok).to.be.false;
     });
 
     it("cannot retrive passwords", async () => {
       const queryA = `{
-                getUser(username: ${testUserA.username}) {
+                getUser(username: "${testUserA.username}") {
                   password_hash
                 }
               }`;
@@ -221,8 +222,9 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ query: queryA });
 
-      const dataA = responseA.body.data.getUser;
-      expect(dataA[0].password).to.equal(undefined);
+      expect(responseA.body.errors[0].message).to.equal(
+        'Cannot query field "password_hash" on type "User".'
+      );
       expect(responseA.ok).to.be.false;
     });
 
@@ -236,44 +238,50 @@ describe("API Interactions", () => {
     });
   });
 
-  describe("Media Records", async () => {
+  describe("Media Records", () => {
     const testUserB = testCases.testUserB;
-    //Add test user B
-    const mutation = `
-            mutation {
-                addUser(
-                input: {
-                    name: ${testUserB.username}
-                    email: ${testUserB.email}
-                    password: ${testUserB.password}
-                }){
-                    id
-                    username
-                    email
-                }
-            }`;
+    let testUserBID;
+    let seed;
 
-    const response = await chai
-      .request(server)
-      .post("/graphql")
-      .send({ query: mutation });
+    it("sets up a test user", async () => {
+      //Add test user B
+      const mutation = `
+              mutation {
+                  addUser(
+                  input: {
+                      username: "${testUserB.username}"
+                      email: "${testUserB.email}"
+                      password: "${testUserB.password}"
+                  }){
+                      id
+                      username
+                      email
+                  }
+              }`;
 
-    const testUserBID = response.body.data.addUser[0].id;
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: mutation });
 
-    const seed = testCases.testMediaRecord;
+      testUserBID = response.body.data.addUser;
+
+      seed = testCases.testMediaRecord;
+    });
+
     it("can create a media record with a username & password", async () => {
       const mutation = `
             mutation {
                 addMediaRecord(
                 input: {
-                    title: ${seed.title}
-                    streaming_service: ${seed.streaming_service}
-                    country: ${seed.country}
-                    media_url: ${seed.media_url}
+                    title: "${seed.title}"
+                    streaming_service: "${seed.streaming_service}"
+                    country: "${seed.country}"
+                    media_url: "${seed.media_url}"
                 }
                 authentication: {
-                    username: ${testUserB.username}
-                    password: ${testUserB.password}
+                    username: "${testUserB.username}"
+                    password: "${testUserB.password}"
                 }){
                     media_url
                     user_id
@@ -334,19 +342,23 @@ describe("API Interactions", () => {
       expect(data.length).to.equal(2);
     });
 
-    //Get ID For Next Few Tests
-    const queryToGetID = `{
-        getMediaRecords {
-          id
-        }
-      }`;
+    let idFrom1;
 
-    const responseToGetID = await chai
-      .request(server)
-      .post("/graphql")
-      .send({ queryToGetID });
+    it("gets id for the next few tests", async () => {
+      //Get ID For Next Few Tests
+      const queryToGetID = `{
+          getMediaRecords {
+            id
+          }
+        }`;
 
-    const idFrom1 = responseToGetID.body.data.getMediaRecords[0].id;
+      const responseToGetID = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ queryToGetID });
+
+      idFrom1 = responseToGetID.body.data.getMediaRecords[0].id;
+    });
 
     it("can view a given media record by id", async () => {
       const query = `{
@@ -404,12 +416,14 @@ describe("API Interactions", () => {
 
     it("can find a list of media records for a given user by userId", async () => {});
 
-    knex("media_records")
-      .where("media_url", testCases.testMediaRecord.media_url)
-      .del();
+    it("cleans up", async () => {
+      await knex("media_records")
+        .where("media_url", testCases.testMediaRecord.media_url)
+        .del();
 
-    knex("users")
-      .whereIn("name", [testUserA.username, testUserB.username])
-      .del();
+      await knex("users")
+        .where("username", testUserB.username)
+        .del();
+    });
   });
 });

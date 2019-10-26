@@ -38,6 +38,7 @@ const typeDefs = gql`
   type Query {
     getAllMedia: [Media]
     getMedia(title: String, id: Int): [Media]
+    getUser(username: String, id: Int): [User]
   }
 
   type Mutation {
@@ -56,6 +57,17 @@ const resolvers = {
         return knex("media").where("id", id);
       }
       return knex("media").where("title", "like", "%" + title + "%");
+    },
+
+    getUser: (_, { username, id }) => {
+      if (id) {
+        return knex("users")
+          .where("id", id)
+          .select("id", "username");
+      }
+      return knex("users")
+        .where("username", username)
+        .select("id", "username");
     }
   },
 
