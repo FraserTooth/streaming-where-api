@@ -6,7 +6,6 @@ const testCases = require("./testCases");
 const chai = require("chai");
 const chaiGraphQL = require("chai-graphql");
 const chaiHttp = require("chai-http");
-chai.should();
 chai.use(chaiGraphQL);
 chai.use(chaiHttp);
 const server = "http://localhost:4000";
@@ -77,7 +76,7 @@ describe("API Interactions", () => {
 
     it("can return a specific item by title or id", async () => {
       const query = `{
-                getMedia(title:${testCases.seedMedia[0].title}) {
+                getMedia(title:"${testCases.seedMedia[0].title}") {
                   id
                   title
                   type
@@ -108,7 +107,7 @@ describe("API Interactions", () => {
       const responseid = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryid });
+        .send({ query: queryid });
 
       const dataid = responseid.body.data.getMedia;
 
@@ -120,15 +119,18 @@ describe("API Interactions", () => {
     const testUserA = testCases.testUserA;
     const testUserB = testCases.testUserB;
 
+    afterEach(() => {});
+
     it("can create a user", async () => {
       const mutation = `
             mutation {
                 addUser(
-                input: {
-                    name: ${testUserA.username}
-                    email: ${testUserA.email}
-                    password: ${testUserA.password}
-                }){
+                  input:{
+                    username: "${testUserA.username}"
+                    email: "${testUserA.email}"
+                    password: "${testUserA.password}"
+                  }){
+                    id
                     username
                     email
                 }
@@ -137,23 +139,23 @@ describe("API Interactions", () => {
       const response = await chai
         .request(server)
         .post("/graphql")
-        .send({ mutation });
+        .send({ query: mutation });
 
       const data = response.body.data.addUser;
 
       expect(response.ok).to.be.true;
       expect(data.length).to.equal(1);
       expect(data[0].username).to.equal(testUserA.username);
-      expect(data[0].email).to.equal(testUserB.username);
+      expect(data[0].email).to.equal(testUserA.email);
       expect(data[0].hasOwnProperty("password")).to.be.false;
     });
 
-    it("password is hashed", () => {
-      const passwordCheck = knex("users")
-        .select("password")
-        .where({ name: testUserA.username });
+    it("password is hashed", async () => {
+      const passwordCheck = await knex("users")
+        .select("password_hash")
+        .where("username", testUserA.username);
 
-      expect(passwordCheck).to.equal(testCases.expectedTestUserAHash);
+      expect(passwordCheck[0].password_hash[0]).to.equal("$");
     });
 
     it("can retrive specific user information on the basis of username or id", async () => {
@@ -167,7 +169,7 @@ describe("API Interactions", () => {
       const responseA = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryA });
+        .send({ query: queryA });
 
       const dataA = responseA.body.data.getUser;
 
@@ -183,7 +185,7 @@ describe("API Interactions", () => {
       const responseB = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryB });
+        .send({ query: queryB });
 
       const dataB = responseB.body.data.getUser;
 
@@ -200,7 +202,7 @@ describe("API Interactions", () => {
       const responseA = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryA });
+        .send({ query: queryA });
 
       const dataA = responseA.body.data.getUser;
       expect(dataA[0].email).to.equal(undefined);
@@ -217,17 +219,21 @@ describe("API Interactions", () => {
       const responseA = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryA });
+        .send({ query: queryA });
 
       const dataA = responseA.body.data.getUser;
       expect(dataA[0].password).to.equal(undefined);
       expect(responseA.ok).to.be.false;
     });
 
-    //Clean Up, decided not to add a delete user step at present, probably need a 'clean data from account' method so the records are still attributable
-    knex("users")
-      .whereIn("name", [testUserA.username, testUserB.username])
-      .del();
+    it("cleans up", async () => {
+      console.log("Cleaning Up");
+      //Clean Up, decided not to add a delete user step at present, probably need a 'clean data from account' method so the records are still attributable
+
+      await knex("users")
+        .where("username", testUserA.username)
+        .del();
+    });
   });
 
   describe("Media Records", async () => {
@@ -250,7 +256,7 @@ describe("API Interactions", () => {
     const response = await chai
       .request(server)
       .post("/graphql")
-      .send({ mutation });
+      .send({ query: mutation });
 
     const testUserBID = response.body.data.addUser[0].id;
 
@@ -277,7 +283,7 @@ describe("API Interactions", () => {
       const response = await chai
         .request(server)
         .post("/graphql")
-        .send({ mutation });
+        .send({ query: mutation });
 
       const data = response.body.data.addMediaRecord;
 
@@ -309,7 +315,7 @@ describe("API Interactions", () => {
       const response = await chai
         .request(server)
         .post("/graphql")
-        .send({ mutation });
+        .send({ query: mutation });
 
       const query = `{
             getMediaRecords {
@@ -353,7 +359,7 @@ describe("API Interactions", () => {
       const response = await chai
         .request(server)
         .post("/graphql")
-        .send({ query });
+        .send({ query: query });
 
       const data = response.body.data.getMediaRecord;
 
@@ -382,7 +388,7 @@ describe("API Interactions", () => {
       const response = await chai
         .request(server)
         .post("/graphql")
-        .send({ query });
+        .send({ query: query });
 
       const data = response.body.data.getMediaRecord;
 
