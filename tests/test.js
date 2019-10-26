@@ -2,23 +2,12 @@
 const { expect, assert } = require("chai");
 const config = require("../config");
 const knex = require("knex")(config.db);
+const testCases = require("./testCases")
 //const models = require("../models")(knex);
 
 const forcePromiseReject = () => {
   throw new Error("This promise should have failed, but did not.");
 };
-
-const expectedTables = [
-    "users",
-    "media",
-    "streaming_services",
-    "countries",
-    "languages",
-    "media_records",
-    "media_record_votes",
-    "accessibility_records",
-    "accessibility_record_votes"
-]
 
 describe("Initialisation", () => {
     describe("Expected Tables", () => {
@@ -27,7 +16,7 @@ describe("Initialisation", () => {
             .raw("select 1+1 as result")
             .catch(() => assert.fail("unable to connect to db")));
         
-        expectedTables.forEach((tableName) => {
+        testCases.expectedTables.forEach((tableName) => {
             it(`has ${tableName} table`, () =>
                 knex(tableName)
                     .select()
@@ -36,6 +25,25 @@ describe("Initialisation", () => {
     });
 
     describe("Initial Data Seed", () => {
+
+        const expectedSeed = {
+            media: testCases.seedMedia,
+            streaming_services: testCases.seedStreamingServices,
+            countries: testCases.seedCountries,
+            languages: testCases.seedLanguages
+        }    
+
+        for (const table in expectedSeed) {
+            const seed = expectedSeed[table]
+            it(`table ${table} should have the expected seed data`, async () => {
+                const response = 
+                    await knex(table)
+                        .select()
+                console.log(seed)
+                expect(response[0].hasOwnProperty("id")).to.be.true;
+                expect(response.length).to.equal(seed.length);
+            })
+        } 
         
     })
 })

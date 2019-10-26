@@ -1,6 +1,6 @@
 This was created during my time as a student at Code Chrysalis
 
-# streamingWhereAPI
+# streaming-where-api
 API for community sourced information about media streaming services with information about audio/subtitles/censorship/edits and country by country availability.
 
 ## Environment
@@ -12,7 +12,7 @@ You will need postgres installed. If you haven't installed it already, download 
 Create a database for this project by running:
 
 ```bash
-    echo "CREATE DATABASE streamingWhere;" | psql
+    echo "CREATE DATABASE streamingwhere;" | psql
 ```
 
 ### Installing Dependencies and Startup

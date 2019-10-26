@@ -27,6 +27,7 @@
     "pretty-quick": "^2.0.0"
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "express": "^4.17.1",
     "knex": "^0.20.0",
     "moment": "^2.24.0",
