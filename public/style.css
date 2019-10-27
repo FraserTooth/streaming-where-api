@@ -1,0 +1,15 @@
+html {
+  height: 100%; /* make sure it is at least as tall as the viewport */
+  position: relative;
+}
+
+body {
+  height: 100%; /* force the BODY element to match the height of the HTML element */
+}
+
+.form-container {
+  padding: 10px;
+  max-width: 50%;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
