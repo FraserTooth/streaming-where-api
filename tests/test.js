@@ -414,9 +414,72 @@ describe("API Interactions", () => {
       expect(data[0].user[0].username).to.equal(testUserB.username);
     });
 
-    it("can find a list of media records for a given media by media title", async () => {});
+    it("can find a list of media records for a given media by media title", async () => {
+      const mutation = `
+            mutation {
+                addMediaRecord(
+                input: {
+                    title: "${seed.title}"
+                    streaming_service: "${seed.streaming_service}"
+                    country: "UK"
+                    media_url: "${seed.media_url}"
+                }
+                authentication: {
+                    username: "${testUserB.username}"
+                    password: "${testUserB.password}"
+                }){
+                    media_url
+                    user_id
+                }
+            }`;
 
-    it("can find a list of media records for a given user by userId", async () => {});
+      const newRecordResponse = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query: mutation });
+
+      const query = `{
+        getMediaRecordsByTitle(title:"${seed.title}") {
+          id
+          media{
+              title
+          }
+        }
+      }`;
+
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query });
+
+      const data = response.body.data.getMediaRecordsByTitle;
+
+      expect(data.length).to.equal(2);
+      expect(data[0].media[0].title).to.equal(data[1].media[0].title);
+      expect(data[0].id).to.not.equal(data[1].id);
+    });
+
+    it("can find a list of media records for a given user by userId", async () => {
+      const query = `{
+        getMediaRecordsByUserID(id:${testUserBID}) {
+          id
+          media{
+              title
+          }
+        }
+      }`;
+
+      const response = await chai
+        .request(server)
+        .post("/graphql")
+        .send({ query });
+
+      const data = response.body.data.getMediaRecordsByUserID;
+
+      expect(data.length).to.equal(3);
+      expect(data[0].media[0].title).to.equal(data[2].media[0].title);
+      expect(data[0].id).to.not.equal(data[1].id);
+    });
 
     it("cleans up", async () => {
       const idResponse = await knex("users")

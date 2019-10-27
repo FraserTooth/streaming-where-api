@@ -80,6 +80,8 @@ const typeDefs = gql`
     getUser(username: String, id: Int): [User]
     getMediaRecords: [MediaRecord]
     getMediaRecord(id: Int!): [MediaRecord]
+    getMediaRecordsByTitle(title: String!): [MediaRecord]
+    getMediaRecordsByUserID(id: Int!): [MediaRecord]
   }
 
   type Mutation {
@@ -125,9 +127,20 @@ const resolvers = {
     },
 
     getMediaRecord: (_, { id }) => {
-      return knex("media_records")
-        .select()
-        .where("id", id);
+      return knex("media_records").where("id", id);
+    },
+
+    getMediaRecordsByTitle: (_, { title }) => {
+      return knex("media")
+        .select("id")
+        .where("title", title)
+        .then(response => {
+          return knex("media_records").where("media_id", response[0].id);
+        });
+    },
+
+    getMediaRecordsByUserID: (_, { id }) => {
+      return knex("media_records").where("user_id", id);
     }
   },
 
