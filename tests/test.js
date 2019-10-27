@@ -229,7 +229,7 @@ describe("API Interactions", () => {
     });
 
     it("cleans up", async () => {
-      console.log("Cleaning Up");
+      //console.log("Cleaning Up");
       //Clean Up, decided not to add a delete user step at present, probably need a 'clean data from account' method so the records are still attributable
 
       await knex("users")
@@ -264,7 +264,7 @@ describe("API Interactions", () => {
         .post("/graphql")
         .send({ query: mutation });
 
-      testUserBID = response.body.data.addUser;
+      testUserBID = response.body.data.addUser[0].id;
 
       seed = testCases.testMediaRecord;
     });
@@ -295,11 +295,9 @@ describe("API Interactions", () => {
 
       const data = response.body.data.addMediaRecord;
 
-      console.log(response);
-
       expect(response.ok).to.be.true;
       expect(data.length).to.equal(1);
-      expect(data[0].id).to.equal(testUserBID);
+      expect(data[0].user_id).to.equal(testUserBID);
       expect(data[0].media_url).to.equal(seed.media_url);
     });
 
@@ -314,8 +312,8 @@ describe("API Interactions", () => {
                     media_url: "https://www.amazon.co.jp/gp/video/detail/B07QBC423H/"
                 }
                 authentication: {
-                    username: ${testUserB.username}
-                    password: ${testUserB.password}
+                    username: "${testUserB.username}"
+                    password: "${testUserB.password}"
                 }){
                     media_url
                     user_id
@@ -357,7 +355,7 @@ describe("API Interactions", () => {
       const responseToGetID = await chai
         .request(server)
         .post("/graphql")
-        .send({ queryToGetID });
+        .send({ query: queryToGetID });
 
       idFrom1 = responseToGetID.body.data.getMediaRecords[0].id;
     });
@@ -378,22 +376,22 @@ describe("API Interactions", () => {
       const data = response.body.data.getMediaRecord;
 
       expect(data.length).to.equal(1);
-      expect(response2.ok).to.be.true;
+      expect(response.ok).to.be.true;
     });
 
     it("can return further information about media, streaming service, country & user", async () => {
       const query = `{
             getMediaRecord(id:${idFrom1}) {
-              Media{
+              media{
                   title
               }
-              StreamingService{
+              streaming_service{
                   name
               }
-              Country{
+              country{
                   name
               }
-              User {
+              user {
                   username
               }
             }
@@ -407,11 +405,13 @@ describe("API Interactions", () => {
       const data = response.body.data.getMediaRecord;
 
       expect(data.length).to.equal(1);
-      expect(response2.ok).to.be.true;
-      expect(data[0].Media.title).to.equal(seed.title);
-      expect(data[0].StreamingService.title).to.equal(seed.streaming_service);
-      expect(data[0].Country.name).to.equal(seed.country);
-      expect(data[0].User.username).to.equal(testUserB.username);
+      expect(response.ok).to.be.true;
+      expect(data[0].media[0].title).to.equal(seed.title);
+      expect(data[0].streaming_service[0].name).to.equal(
+        seed.streaming_service
+      );
+      expect(data[0].country[0].name).to.equal(seed.country);
+      expect(data[0].user[0].username).to.equal(testUserB.username);
     });
 
     it("can find a list of media records for a given media by media title", async () => {});
@@ -419,8 +419,12 @@ describe("API Interactions", () => {
     it("can find a list of media records for a given user by userId", async () => {});
 
     it("cleans up", async () => {
+      const idResponse = await knex("users")
+        .select("id")
+        .where("username", testUserB.username);
+
       await knex("media_records")
-        .where("media_url", testCases.testMediaRecord.media_url)
+        .where("user_id", idResponse[0].id)
         .del();
 
       await knex("users")

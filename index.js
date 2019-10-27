@@ -31,6 +31,17 @@ const typeDefs = gql`
     email: String
   }
 
+  type StreamingService {
+    id: Int!
+    name: String!
+    base_url: String!
+  }
+
+  type Country {
+    id: Int!
+    name: String!
+  }
+
   type MediaRecord {
     id: Int!
     media_id: Int!
@@ -39,6 +50,10 @@ const typeDefs = gql`
     user_id: Int!
     media_url: String
     created_at: String!
+    media: [Media]
+    streaming_service: [StreamingService]
+    country: [Country]
+    user: [User]
   }
 
   input addUser {
@@ -63,6 +78,8 @@ const typeDefs = gql`
     getAllMedia: [Media]
     getMedia(title: String, id: Int): [Media]
     getUser(username: String, id: Int): [User]
+    getMediaRecords: [MediaRecord]
+    getMediaRecord(id: Int!): [MediaRecord]
   }
 
   type Mutation {
@@ -71,6 +88,11 @@ const typeDefs = gql`
       input: addMediaRecord
       authentication: authenticate
     ): [MediaRecord]
+  }
+
+  schema {
+    query: Query
+    mutation: Mutation
   }
 `;
 
@@ -95,6 +117,36 @@ const resolvers = {
       }
       return knex("users")
         .where("username", username)
+        .select("id", "username");
+    },
+
+    getMediaRecords: () => {
+      return knex("media_records").select();
+    },
+
+    getMediaRecord: (_, { id }) => {
+      return knex("media_records")
+        .select()
+        .where("id", id);
+    }
+  },
+
+  MediaRecord: {
+    media: media_record => {
+      return knex("media").where("id", media_record.media_id);
+    },
+    streaming_service: media_record => {
+      return knex("streaming_services").where(
+        "id",
+        media_record.streaming_service_id
+      );
+    },
+    country: media_record => {
+      return knex("countries").where("id", media_record.country_id);
+    },
+    user: media_record => {
+      return knex("users")
+        .where("id", media_record.user_id)
         .select("id", "username");
     }
   },
@@ -123,12 +175,14 @@ const resolvers = {
         .where("username", authentication.username);
       const test = await isPasswordValid(
         authentication.password,
-        userInfo.password_hash
+        userInfo[0]["password_hash"]
       );
       if (!test) {
+        console.log("Password Invalid");
         return;
       }
-      const user_id = userInfo.id;
+      console.log("Password Valid");
+      const user_id = userInfo[0].id;
       const media_id = await knex("media")
         .select("id")
         .where("title", "like", "%" + input.title + "%");
@@ -138,12 +192,13 @@ const resolvers = {
       const streaming_service_id = await knex("streaming_services")
         .select("id")
         .where("name", "like", "%" + input.streaming_service + "%");
+
       return knex("media_records")
         .insert({
-          media_id,
-          country_id,
-          streaming_service_id,
-          user_id,
+          media_id: media_id[0].id,
+          country_id: country_id[0].id,
+          streaming_service_id: streaming_service_id[0].id,
+          user_id: user_id,
           media_url: input.media_url
         })
         .then(() => {
