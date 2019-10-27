@@ -101,23 +101,11 @@ const showQueryResponse = async arrayOfItems => {
     responseContainer.removeChild(responseContainer.firstChild);
   }
 
-  console.log(arrayOfItems[0]);
-
-  // <thead>
-  //   <tr>
-  //     <th scope="col">#</th>
-  //     <th scope="col">First</th>
-  //     <th scope="col">Last</th>
-  //     <th scope="col">Handle</th>
-  //   </tr>
-  // </thead>
-
   const headers = Object.keys(arrayOfItems[0]);
 
   const header = document.createElement("thead");
   const headerRow = document.createElement("tr");
   headers.forEach(name => {
-    console.log(name);
     const heading = document.createElement("th");
     heading.setAttribute("scope", "col");
     heading.innerText = name;
