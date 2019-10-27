@@ -74,21 +74,84 @@ const getMediaRecordsByTitle = async title => {
   const query = `{
         getMediaRecordsByTitle(title:"${title}") {
           id
+          media_url
           media{
-              title
+            title
+          }
+          streaming_service{
+              name
+          }
+          country{
+              name
+          }
+          user {
+              username
           }
         }
       }`;
 
   const jsonResponse = await api(query);
+
   return jsonResponse.data.getMediaRecordsByTitle;
 };
 
+const showQueryResponse = async arrayOfItems => {
+  //Remove All Previous Responses
+  while (responseContainer.firstChild) {
+    responseContainer.removeChild(responseContainer.firstChild);
+  }
+
+  console.log(arrayOfItems[0]);
+
+  // <thead>
+  //   <tr>
+  //     <th scope="col">#</th>
+  //     <th scope="col">First</th>
+  //     <th scope="col">Last</th>
+  //     <th scope="col">Handle</th>
+  //   </tr>
+  // </thead>
+
+  const headers = Object.keys(arrayOfItems[0]);
+
+  const header = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  headers.forEach(name => {
+    console.log(name);
+    const heading = document.createElement("th");
+    heading.setAttribute("scope", "col");
+    heading.innerText = name;
+    headerRow.appendChild(heading);
+  });
+  header.appendChild(headerRow);
+  responseContainer.appendChild(header);
+
+  const tbody = document.createElement("tbody");
+
+  for (let index = 0; index < arrayOfItems.length; index++) {
+    const dataRow = arrayOfItems[index];
+    const row = document.createElement("tr");
+    for (const key in dataRow) {
+      if (dataRow.hasOwnProperty(key)) {
+        const data = dataRow[key];
+        const column = document.createElement("td");
+        column.innerText = data;
+        row.appendChild(column);
+      }
+    }
+    responseContainer.appendChild(row);
+  }
+
+  responseContainer.appendChild(tbody);
+};
+
+//User Creation
 const inputUsername = document.getElementById("inputUsername");
 const inputEmail = document.getElementById("inputEmail");
 const inputPassword = document.getElementById("inputPassword");
 const userForm = document.getElementById("userForm");
 
+//Media Record Creation
 const inputTitle = document.getElementById("inputTitle");
 const inputService = document.getElementById("inputService");
 const inputCountry = document.getElementById("inputCountry");
@@ -96,6 +159,15 @@ const inputMediaURL = document.getElementById("inputMediaURL");
 const authMediaUsername = document.getElementById("authMediaUsername");
 const authMediaPassword = document.getElementById("authMediaPassword");
 const mediaRecordForm = document.getElementById("mediaRecordForm");
+
+//Queries
+const mediaRecordsByTitleForm = document.getElementById("mediaRecordsByTitle");
+const searchTitle = document.getElementById("searchTitle");
+
+//Response Display
+const responseContainer = document.getElementsByClassName(
+  "response-container"
+)[0];
 
 document
   .getElementById("userSubmitButton")
@@ -146,4 +218,38 @@ document
     inputMediaURL.removeAttribute("readonly");
     authMediaPassword.removeAttribute("readonly");
     authMediaUsername.removeAttribute("readonly");
+  });
+
+document
+  .getElementById("searchTitleButton")
+  .addEventListener("click", async event => {
+    event.preventDefault();
+    searchTitle.setAttribute("readonly", true);
+
+    const response = await getMediaRecordsByTitle(searchTitle.value);
+    console.log(await response);
+
+    searchTitle.removeAttribute("readonly");
+
+    const array = [];
+
+    for (const key in await response) {
+      if (response.hasOwnProperty(key)) {
+        const element = await response[key];
+        array.push(element);
+      }
+    }
+
+    responseArray = array.map(datum => {
+      return {
+        id: datum.id,
+        title: datum.media[0].title,
+        streaming_service: datum.streaming_service[0].name,
+        country: datum.country[0].name,
+        media_url: datum.media_url,
+        username: datum.user[0].username
+      };
+    });
+    showQueryResponse(responseArray);
+    mediaRecordsByTitleForm.reset();
   });

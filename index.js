@@ -133,8 +133,11 @@ const resolvers = {
     getMediaRecordsByTitle: (_, { title }) => {
       return knex("media")
         .select("id")
-        .where("title", title)
+        .where("title", "like", "%" + title + "%")
         .then(response => {
+          if (response.length === 0) {
+            return new Error("Cannot Find Media");
+          }
           return knex("media_records").where("media_id", response[0].id);
         });
     },

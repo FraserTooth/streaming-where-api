@@ -23,109 +23,149 @@
   <body>
     <h1>Streaming Where API Tester</h1>
 
-    <h2>Create User</h2>
-    <div class="form-container">
-      <form id="userForm">
-        <div class="form-group">
-          <label for="inputUsername">Username</label>
-          <input
-            type="username"
-            class="form-control"
-            id="inputUsername"
-            placeholder="Username"
-          />
+    <div class="content container-fluid">
+      <div class="api row">
+        <div class="col-md-6 forms">
+          <h2>Create User</h2>
+          <div class="form-container">
+            <form id="userForm">
+              <div class="form-group">
+                <label for="inputUsername">Username</label>
+                <input
+                  type="username"
+                  class="form-control"
+                  id="inputUsername"
+                  placeholder="Username"
+                />
+              </div>
+              <div class="form-group">
+                <label for="inputEmail">Email address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="inputEmail"
+                  aria-describedby="emailHelp"
+                  placeholder="Enter email"
+                />
+                <small id="emailHelp" class="form-text text-muted"
+                  >We'll never share your email with anyone else.</small
+                >
+              </div>
+              <div class="form-group">
+                <label for="inputPassword">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="inputPassword"
+                  placeholder="Password"
+                />
+              </div>
+              <button
+                id="userSubmitButton"
+                type="submit"
+                class="btn btn-primary"
+              >
+                Create Account
+              </button>
+            </form>
+          </div>
+
+          <h2>Create Media Record</h2>
+          <div class="form-container">
+            <form id="mediaRecordForm">
+              <div class="form-group">
+                <label for="inputTitle">Title</label>
+                <input
+                  type="title"
+                  class="form-control"
+                  id="inputTitle"
+                  placeholder="Title of Media"
+                />
+              </div>
+              <div class="form-group">
+                <label for="inputService">Streaming Service</label>
+                <input
+                  type="streamingService"
+                  class="form-control"
+                  id="inputService"
+                  placeholder="Name of Service"
+                />
+              </div>
+              <div class="form-group">
+                <label for="inputCountry">Country</label>
+                <input
+                  type="country"
+                  class="form-control"
+                  id="inputCountry"
+                  placeholder="Country"
+                />
+              </div>
+              <div class="form-group">
+                <label for="inputMediaURL">URL</label>
+                <input
+                  type="mediaUrl"
+                  class="form-control"
+                  id="inputMediaURL"
+                  placeholder="URL"
+                />
+              </div>
+              <label>Authentication</label>
+              <div class="form-group">
+                <label for="authMediaUsername">Username</label>
+                <input
+                  type="username"
+                  class="form-control"
+                  id="authMediaUsername"
+                  placeholder="Username"
+                />
+              </div>
+              <div class="form-group">
+                <label for="authMediaPassword">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="authMediaPassword"
+                  placeholder="Password"
+                />
+              </div>
+              <button
+                id="recordSubmitButton"
+                type="submit"
+                class="btn btn-primary"
+              >
+                Create Record
+              </button>
+            </form>
+          </div>
+
+          <h2>Queries</h2>
+          <div class="form-container">
+            <form id="mediaRecordsByTitle">
+              <div class="form-group">
+                <label for="searchTitle">Get Media Records By Title</label>
+                <input
+                  type="title"
+                  class="form-control"
+                  id="searchTitle"
+                  placeholder="Search By Title"
+                />
+              </div>
+              <button
+                id="searchTitleButton"
+                type="submit"
+                class="btn btn-primary"
+              >
+                Get Records
+              </button>
+            </form>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="inputEmail">Email address</label>
-          <input
-            type="email"
-            class="form-control"
-            id="inputEmail"
-            aria-describedby="emailHelp"
-            placeholder="Enter email"
-          />
-          <small id="emailHelp" class="form-text text-muted"
-            >We'll never share your email with anyone else.</small
-          >
+        <div class="col-md-6 responses">
+          <div class="response-container table"></div>
         </div>
-        <div class="form-group">
-          <label for="inputPassword">Password</label>
-          <input
-            type="password"
-            class="form-control"
-            id="inputPassword"
-            placeholder="Password"
-          />
-        </div>
-        <button id="userSubmitButton" type="submit" class="btn btn-primary">
-          Create Account
-        </button>
-      </form>
+      </div>
     </div>
 
-    <h2>Create Media Record</h2>
-    <div class="form-container">
-      <form id="mediaRecordForm">
-        <div class="form-group">
-          <label for="inputTitle">Title</label>
-          <input
-            type="title"
-            class="form-control"
-            id="inputTitle"
-            placeholder="Title of Media"
-          />
-        </div>
-        <div class="form-group">
-          <label for="inputService">Streaming Service</label>
-          <input
-            type="streamingService"
-            class="form-control"
-            id="inputService"
-            placeholder="Name of Service"
-          />
-        </div>
-        <div class="form-group">
-          <label for="inputCountry">Country</label>
-          <input
-            type="country"
-            class="form-control"
-            id="inputCountry"
-            placeholder="Country"
-          />
-        </div>
-        <div class="form-group">
-          <label for="inputMediaURL">URL</label>
-          <input
-            type="mediaUrl"
-            class="form-control"
-            id="inputMediaURL"
-            placeholder="URL"
-          />
-        </div>
-        <label>Authentication</label>
-        <div class="form-group">
-          <label for="authMediaUsername">Username</label>
-          <input
-            type="username"
-            class="form-control"
-            id="authMediaUsername"
-            placeholder="Username"
-          />
-        </div>
-        <div class="form-group">
-          <label for="authMediaPassword">Password</label>
-          <input
-            type="password"
-            class="form-control"
-            id="authMediaPassword"
-            placeholder="Password"
-          />
-        </div>
-        <button id="recordSubmitButton" type="submit" class="btn btn-primary">
-          Create Record
-        </button>
-      </form>
-    </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script
