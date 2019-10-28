@@ -1,4 +1,4 @@
-This was created during my time as a student at Code Chrysalis.
+This was created during my time as a student at [Code Chrysalis](https://codechrysalis.io/ "https://codechrysalis.io/")
 
 It was a short, time-pressured weekend project, so this is all quite messy, but I hope to come back and brush it up into a functioning website.
 
