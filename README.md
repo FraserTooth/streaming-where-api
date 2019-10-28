@@ -1,6 +1,13 @@
 This was created during my time as a student at Code Chrysalis.
 
-It was a short, time-pressured weekend project, so this is all quite messy, but I hope to come back a brush it up into a functioning website.
+It was a short, time-pressured weekend project, so this is all quite messy, but I hope to come back and brush it up into a functioning website.
+
+TODO: 
+- Split Functions and Tests into Sub-files
+- Make Tests Truly Independant
+- Add Edit and Delete for Currently Addressed Tables
+- Add All Intended Functionality for the rest of the tables
+- Add a session table to track 'login' so repeated authentication is not required
 
 # streaming-where-api
 
