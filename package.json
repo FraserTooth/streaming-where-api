@@ -37,7 +37,7 @@
     "pretty-quick": "^2.0.0"
   },
   "dependencies": {
-    "apollo-server": "^2.9.7",
+    "apollo-server": "^2.25.3",
     "bcrypt": "^3.0.6",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
